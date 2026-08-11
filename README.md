@@ -1,5 +1,9 @@
 # local-ai-stack
 
+<p align="center">
+  <img src="assets/logo.svg" alt="local-ai-stack" width="720">
+</p>
+
 **Dual-node hybrid local AI stack** — orchestrate a CPU host plus a GPU secondary machine, tiering several local small models to get document automation done at low cost.
 
 > Core value: no reliance on expensive cloud APIs. Organize heterogeneous CPU + GPU hardware and multiple local small models into a self-running three-tier agent system.

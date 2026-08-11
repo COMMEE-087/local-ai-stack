@@ -1,5 +1,9 @@
 # local-ai-stack
 
+<p align="center">
+  <img src="assets/logo.svg" alt="local-ai-stack" width="720">
+</p>
+
 **双机混合本地 AI 工作栈** — 用一台 CPU 主机 + 一台 GPU 副机，分层调度多个本地小模型，低成本完成文档自动化。
 
 > 核心卖点：不依赖云端高额 API，把 CPU + GPU 异构硬件和多个本地小模型组织成一个可自主运行的三级智能体系统。

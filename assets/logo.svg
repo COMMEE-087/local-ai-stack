@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" width="960" height="300" role="img" aria-label="local-ai-stack logo">
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0B2A5D"/>
+      <stop offset="100%" style="stop-color:#081C3E"/>
+    </linearGradient>
+    <linearGradient id="nodeA" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3EA6FF"/>
+      <stop offset="100%" style="stop-color:#1E6FD9"/>
+    </linearGradient>
+    <linearGradient id="nodeB" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3EA6FF"/>
+      <stop offset="100%" style="stop-color:#1E6FD9"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7BC4FF"/>
+      <stop offset="100%" style="stop-color:#3EA6FF"/>
+    </linearGradient>
+    <linearGradient id="wordGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7BC4FF"/>
+      <stop offset="50%" style="stop-color:#3EA6FF"/>
+      <stop offset="100%" style="stop-color:#1E6FD9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background banner -->
+  <rect x="0" y="0" width="960" height="300" rx="36" fill="url(#bgGrad)"/>
+
+  <!-- ===== TWO EQUAL NODES with DOUBLE ARROW LINK ===== -->
+  <g>
+    <!-- left circle -->
+    <circle cx="300" cy="128" r="70" fill="url(#nodeA)" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2.5"/>
+    <!-- right circle -->
+    <circle cx="660" cy="128" r="70" fill="url(#nodeB)" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2.5"/>
+
+    <!-- double arrow line between them -->
+    <!-- upper arrow (left-to-right) -->
+    <line x1="375" y1="112" x2="578" y2="112" stroke="url(#arrowGrad)" stroke-width="9" stroke-linecap="round"/>
+    <polygon points="588,112 560,98 560,126" fill="#3EA6FF"/>
+    <!-- lower arrow (right-to-left) -->
+    <line x1="585" y1="144" x2="382" y2="144" stroke="url(#arrowGrad)" stroke-width="9" stroke-linecap="round" opacity="0.75"/>
+    <polygon points="372,144 400,130 400,158" fill="#3EA6FF"/>
+  </g>
+
+  <!-- ===== WORDMARK (花字 project name) ===== -->
+  <g>
+    <text x="480" y="246" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="62" font-weight="800" letter-spacing="2" fill="url(#wordGrad)" stroke="#FFFFFF" stroke-width="0.6" style="filter: drop-shadow(0 3px 7px rgba(0,0,0,0.5))">local-ai-stack</text>
+    <text x="480" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" letter-spacing="7" fill="#7CA8D8" opacity="0.9">DUAL-NODE · LOCAL · TIERED</text>
+  </g>
+</svg>
