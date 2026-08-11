@@ -37,6 +37,12 @@ local-ai-stack/
 ├── README.md              # this file
 ├── README.zh.md           # Chinese version
 ├── LICENSE                # MIT
+├── config/
+│   └── openclaw.example.json # sanitized config: three-tier dispatch + fallback chain + skill allowlist
+├── scripts/
+│   ├── benchmark.py        # local LLM speed/accuracy benchmark (parametrized endpoint + models)
+│   ├── tspeed.json         # request template for quick single-model speed checks
+│   └── ocr_demo.py         # PaddleOCR one-shot document OCR (reading-order + table grouping)
 └── docs/
     ├── architecture.md    # dual-node + three-tier dispatch (topology, agent roles, task flow)
     ├── model-tiering.md   # tiering strategy + measured performance baseline + routing rules

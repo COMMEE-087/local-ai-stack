@@ -1,0 +1,73 @@
+{
+  "_note": "OpenClaw config example (sanitized). Mirror the three-tier dispatch + fallback + skill-allowlist patterns in your own openclaw.json. Replace every placeholder before use. No real hosts, ports, tokens, or business paths appear here.",
+  "models": {
+    "providers": {
+      "cloud": {
+        "_note": "Cloud model for L1 decision agent (strong semantics). Use your own provider + API key via auth, never commit a key.",
+        "baseUrl": "https://api.example.com/v1",
+        "models": { "deepseek-chat": { "contextWindow": 65536 } }
+      },
+      "local-primary": {
+        "_note": "Host node: multiple resident models behind llama-swap.",
+        "baseUrl": "http://localhost:PORT/v1",
+        "models": {
+          "qwen3:30b": { "contextWindow": 32768 },
+          "qwen3:8b":  { "contextWindow": 16384 }
+        }
+      },
+      "local-gpu": {
+        "_note": "Secondary GPU node, one model resident at a time.",
+        "baseUrl": "http://HOST:PORT/v1",
+        "models": {
+          "instruct-14b": { "contextWindow": 24576 },
+          "coder-14b":    { "contextWindow": 24576 },
+          "vl-7b":        { "contextWindow": 32768 }
+        }
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "_note": "Fallback chain: cloud drops -> host 30B -> host 8B. Offline-safe.",
+      "model": {
+        "primary": "cloud/deepseek-chat",
+        "fallbacks": ["local-primary/qwen3:30b", "local-primary/qwen3:8b"]
+      },
+      "_note2": "Skill allowlist is per-agent (below). Set tools.profile minimal for small-ctx agents and re-add duties via tools.alsoAllow.",
+      "tools": {
+        "profile": "minimal",
+        "alsoAllow": ["read", "write", "exec", "sessions_spawn", "sessions_send"]
+      },
+      "_note3": "Throttle bootstrap doc injection for agents with a small context window.",
+      "bootstrapMaxChars": 2000,
+      "bootstrapTotalMaxChars": 8000
+    },
+    "list": [
+      {
+        "_note": "L1 decision agent: cloud model, sees NO skills (keeps its own context lean).",
+        "id": "main",
+        "model": "cloud/deepseek-chat",
+        "skills": []
+      },
+      {
+        "_note": "L2 dispatch agent: local 8B, no skill injection.",
+        "id": "courier",
+        "model": "local-primary/qwen3:8b",
+        "skills": []
+      },
+      {
+        "_note": "L2 aggregator agent: local 8B, no skill injection.",
+        "id": "secretariat",
+        "model": "local-primary/qwen3:8b",
+        "skills": []
+      },
+      {
+        "_note": "L3 execution agent: heavy work on GPU 14B, allowlisted skills only.",
+        "id": "super-engineer",
+        "model": "local-gpu/instruct-14b",
+        "skills": ["my-workflow", "ocr-flow"],
+        "_note2": "agentToAgent allowlist governs main <-> dispatch <-> execution handoff (not shown here)."
+      }
+    ]
+  }
+}

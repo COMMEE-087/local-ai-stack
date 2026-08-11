@@ -37,6 +37,12 @@ local-ai-stack/
 ├── README.md              # 英文版
 ├── README.zh.md           # 本文件（中文版）
 ├── LICENSE                # MIT
+├── config/
+│   └── openclaw.example.json # 脱敏配置：三级分流 + fallback 链 + 技能白名单
+├── scripts/
+│   ├── benchmark.py        # 本地模型测速/准确度基准（端点+模型名参数化）
+│   ├── tspeed.json         # 单模型快速测速的请求模板
+│   └── ocr_demo.py         # PaddleOCR 文档识别示例（阅读排序 + 表格分组）
 └── docs/
     ├── architecture.md    # 双机 + 三级分流架构详解（拓扑图、agent 分工、任务流）
     ├── model-tiering.md   # 模型分层策略 + 实测性能基准 + 路由规则
