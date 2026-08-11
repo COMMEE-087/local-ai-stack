@@ -43,6 +43,8 @@ local-ai-stack/
     ├── skills.md          # 技能渐进加载 + 按 agent 白名单注入（防 ctx 溢出）
     ├── fallback.md        # fallback 链设计 + 网络容错 + 本地/云端切换
     └── tuning.md          # 优化经验：系统瘦身、ctx 调优、踩坑记录
+
+> `docs/` 下每篇均有英文版（后缀 `.en.md`，如 `architecture.en.md`），由中文原文完整翻译。
 ```
 
 ## 快速上手（概览）

@@ -43,6 +43,8 @@ local-ai-stack/
     ├── skills.md          # progressive skill loading + per-agent allowlist injection (ctx overflow prevention)
     ├── fallback.md        # fallback chain design + network resilience + local/cloud switching
     └── tuning.md          # optimization notes: system slimming, ctx tuning, pitfalls
+
+> Every doc under `docs/` also has an English version suffixed `.en.md` (e.g. `architecture.en.md`), fully translated from the Chinese original.
 ```
 
 ## Quick Start (Overview)
