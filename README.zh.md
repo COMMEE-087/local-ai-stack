@@ -10,6 +10,13 @@
 
 **README**: [English](README.md) | [中文](README.zh.md)
 
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
+  <img src="https://img.shields.io/badge/lang-English%20%26%20中文-0891b2.svg" alt="bilingual">
+  <img src="https://img.shields.io/badge/docs-5%20topics-2ea44f.svg" alt="docs">
+  <img src="https://img.shields.io/badge/architecture-dual--node%20%7C%20three--tier-6f42c1.svg" alt="architecture">
+</p>
+
 ---
 
 ## 为什么做这个

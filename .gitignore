@@ -1,0 +1,53 @@
+# ---- secrets & local env ----
+.env
+.env.*
+*.key
+*.pem
+*_cred*
+!keep/
+!*.example.*
+!*.example.yaml
+!*.example.json
+
+# ---- OpenClaw / agent runtime local state ----
+.openclaw/
+memory/
+*.session.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# ---- Node ----
+node_modules/
+*.log
+
+# ---- data / models (never commit large or derived artifacts) ----
+models/
+*.gguf
+*.onnx
+*.bin
+data/
+*.db
+*.sqlite*
+*.chroma
+
+# ---- OS / editor cruft ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~
+.vscode/
+.idea/
+
+# ---- intermediate build / OCR output ----
+*_ocr/
+*_ocr.json
+*_ocr.txt
+*_ocr.csv
+_tmp_*
