@@ -71,6 +71,22 @@ local-ai-stack/
 
 详细步骤见 `docs/architecture.md`。
 
+## 自己复现（实操顺序）
+
+仓库里的一切都是给你**照抄改写**的，不只是读的。建议顺序：
+
+1. **双节点模型** — 改 `config/llama-swap.example.yaml`：
+   - 主机段：让多个小模型常驻（`swap: false` + `preload`）；
+   - GPU 段：把重活/视觉模型放进 `eviction` 组，同一时刻只加载一个。
+   两个节点各用 `llama-swap -config <文件> -listen ...` 启动。
+2. **OpenClaw 对接两端点** — 复制 `config/openclaw.example.json`，替换占位符（`api.example.com`、端口、模型别名），保留三级 agent 名单：`main`（云端）→ `courier`/`secretariat`（本地 8B）→ `super-engineer`（GPU 14B）。保持每个 agent 的技能白名单和 fallback 链不变。
+3. **测你的硬件** — 对自家 `llama-swap` 端点跑 `scripts/benchmark.py` 拿真实 tok/s，再按任务选层（`python scripts/benchmark.py --url http://HOST:PORT/v1/chat/completions`）。
+4. **OCR 一份文档** — `scripts/ocr_demo.py` 提供了可复用的 PaddleOCR 流水（阅读排序 + 表格分组），把路径换成你自己的扫描件。
+5. **盯紧小 ctx 约束** — 加技能前先读 `docs/skills.md` 和 `docs/tuning.md`：优先**渐进加载** + 按 agent 白名单，限流 bootstrap 注入，大上下文任务走 30B 或云端。
+6. **保持断网可用** — 保留 fallback 链（云端 → 30B → 8B），停掉代理实测降级是否生效；诊断流程见 `docs/fallback.md`。
+
+每篇 `docs/*` 都有同名 `.en.md` 英文版。
+
 ## 适用场景
 
 - 你有闲置 GPU + 一台 CPU 主机，想跑本地模型做自动化。

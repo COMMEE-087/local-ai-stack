@@ -71,6 +71,22 @@ local-ai-stack/
 
 For detailed steps see `docs/architecture.md`.
 
+## Reproduce It Yourself
+
+Everything in this repo exists to be copied and adapted, not just read. Suggested order:
+
+1. **Models on two nodes** — adapt `config/llama-swap.example.yaml`:
+   - host section: keep several small models resident (`swap: false`, `preload`);
+   - GPU section: put the heavy/vision models in an `eviction` group so only one is loaded at a time.
+   Start each node with `llama-swap -config <file> -listen ...`.
+2. **Wire OpenClaw to both endpoints** — copy `config/openclaw.example.json`, replace the placeholders (`api.example.com`, ports, model aliases), and keep the three-tier agent list: `main` (cloud) → `courier`/`secretariat` (local 8B) → `super-engineer` (GPU 14B). Keep the skill allowlist per agent and the fallback chain intact.
+3. **Measure your hardware** — run `scripts/benchmark.py` against your `llama-swap` endpoint to get real tok/s and pick the right tier per task (`python scripts/benchmark.py --url http://HOST:PORT/v1/chat/completions`).
+4. **OCR a document** — `scripts/ocr_demo.py` shows a reusable PaddleOCR pipeline (reading-order sort + table grouping); adapt the paths to your own scans.
+5. **Sweat the small-ctx constraint** — before adding skills, read `docs/skills.md` and `docs/tuning.md`: prefer `progressive loading` + per-agent allowlist, throttle bootstrap injection, and route large-context work to 30B or the cloud.
+6. **Stay offline-fat** — keep the fallback chain (cloud → 30B → 8B) and test it by stopping your proxy; see `docs/fallback.md` for the diagnosis flow.
+
+Each `docs/*` file has an English version under the same name with `.en.md`.
+
 ## Use Cases
 
 - You have an idle GPU plus a CPU host and want to run local models for automation.
