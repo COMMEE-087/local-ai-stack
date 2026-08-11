@@ -1,0 +1,80 @@
+# llama-swap configuration example (sanitized, dual-node)
+# -----------------------------------------------------------------
+# Two llama-swap services, one per node, showing the two routing modes
+# that back the "host resident vs. GPU swap-on-demand" strategy in
+# docs/architecture.md and docs/model-tiering.md.
+#
+#   HOST node      : routing.use = group + swap:false -> all models stay
+#                    resident, switching is just routing (no reload). Best
+#                    for many small models when CPU RAM is plentiful.
+#   GPU  node      : routing groups of type eviction -> only one GPU model
+#                    loaded at a time (VRAM-limited), swapped on demand
+#                    (unload+reload). Best for real-time heavy work.
+#
+# Replace every placeholder below (GGUF paths, model dirs, ports, hostnames)
+# with your own. No real hosts, ports, paths, or user names appear here.
+# -----------------------------------------------------------------
+
+# ============================ HOST NODE ============================
+# load into: llama-swap -config host.yaml -listen localhost:PORT
+routing:
+  router:
+    use: group
+    settings:
+      groups:
+        "all":
+          swap: false        # false = all members resident at once, never evicted
+          exclusive: false   # false = does not evict other groups
+          persistent: true   # true = other groups cannot unload these members
+          members:
+            - "qwen3:30b"      # main: long-form / quality (MoE, CPU)
+            - "qwen3:8b"       # everyday: chat / split / summarize
+            - "qwen2.5:1.5b"   # very-fast formatting / names / self-check
+
+# warm all models at startup (official preload mechanism)
+hooks:
+  on_startup:
+    preload:
+      - "qwen3:30b"
+      - "qwen3:8b"
+      - "qwen2.5:1.5b"
+
+models:
+  qwen3:30b:                # complex reasoning / long docs (large ctx)
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/Qwen3-30B-A3B-Instruct-Q4_K_M.gguf" --no-webui --reasoning off -c 32768 -ngl 0 -b 2048 -ub 2048 -t 8'
+  qwen3:8b:                 # everyday fast
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/qwen3-8b-q4_k_m.gguf" --no-webui --reasoning off -c 16384 -ngl 0 -b 512 -ub 512 -t 8'
+  qwen2.5:1.5b:             # rapid formatting / self-check
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/qwen2.5-1.5b-instruct-q8_0.gguf" --no-webui -c 16384 -ngl 0 -b 512 -ub 512 -t 8'
+
+# ---------------------------- GPU NODE ----------------------------
+# load into: llama-swap -config gpu.yaml -listen 0.0.0.0:PORT
+# One big GPU model resident at a time; VL/coder/instruct swap on demand.
+routing:
+  router:
+    use: group
+    settings:
+      groups:
+        gpu_models:          # eviction = only one loaded at a time for VRAM
+          type: eviction
+          models:
+            - "qwen2.5-instruct:14b"   # document generation / tool calls  (~50 tok/s)
+            - "qwen2.5-coder:14b"      # coding
+            - "hermes2pro:8b"          # tool-use / agentic
+            - "qwen2.5-vl:7b"          # vision / OCR / charts (mmproj)
+        cpu_models:          # long-text summarization that must not touch GPU
+          type: eviction
+          models:
+            - "qwen3:8b"
+
+models:
+  qwen2.5-instruct:14b:
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/qwen2.5-14b-instruct-q4_k_m.gguf" --no-webui --offline -c 24576 -ngl 99 --flash-attn auto -b 1024 -ub 1024 --cache-type-k q8_0 --cache-type-v q8_0'
+  qwen2.5-coder:14b:
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/qwen2.5-coder-14b.gguf" --no-webui --offline -c 24576 -ngl 99 --flash-attn auto -b 1024 -ub 1024 --cache-type-k q8_0 --cache-type-v q8_0'
+  hermes2pro:8b:
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf" --no-webui --offline -c 32768 -ngl 99 --flash-attn auto -b 1024 -ub 1024 --cache-type-k q8_0 --cache-type-v q8_0'
+  qwen2.5-vl:7b:
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/qwen2.5-vl-7b-q4_k_m.gguf" --mmproj "/opt/models/qwen2.5-vl-7b-mmproj-f16.gguf" --no-webui --offline -c 32768 -ngl 99 --flash-attn auto -b 1024 -ub 1024 --image-min-tokens 1024'
+  qwen3:8b:                 # CPU long-text summarization on the GPU node
+    cmd: '/opt/local/bin/llama-server --port ${PORT} --host 127.0.0.1 --model "/opt/models/Qwen3-8B-Q4_K_M.gguf" --no-webui --offline --reasoning off -c 32768 -ngl 0 -b 512 -ub 512 -t 8'

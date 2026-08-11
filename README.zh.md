@@ -38,7 +38,8 @@ local-ai-stack/
 ├── README.zh.md           # 本文件（中文版）
 ├── LICENSE                # MIT
 ├── config/
-│   └── openclaw.example.json # 脱敏配置：三级分流 + fallback 链 + 技能白名单
+│   ├── openclaw.example.json # 脱敏配置：三级分流 + fallback 链 + 技能白名单
+│   └── llama-swap.example.yaml # 双节点 llama-swap：主机常驻模式 + GPU 按需换模式
 ├── scripts/
 │   ├── benchmark.py        # 本地模型测速/准确度基准（端点+模型名参数化）
 │   ├── tspeed.json         # 单模型快速测速的请求模板

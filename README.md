@@ -38,7 +38,8 @@ local-ai-stack/
 ├── README.zh.md           # Chinese version
 ├── LICENSE                # MIT
 ├── config/
-│   └── openclaw.example.json # sanitized config: three-tier dispatch + fallback chain + skill allowlist
+│   ├── openclaw.example.json # sanitized config: three-tier dispatch + fallback chain + skill allowlist
+│   └── llama-swap.example.yaml # dual-node llama-swap: host resident mode + GPU eviction mode
 ├── scripts/
 │   ├── benchmark.py        # local LLM speed/accuracy benchmark (parametrized endpoint + models)
 │   ├── tspeed.json         # request template for quick single-model speed checks
