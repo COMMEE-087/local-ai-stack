@@ -1,65 +1,68 @@
 # local-ai-stack
 
-**双机混合本地 AI 工作栈** — 用一台 CPU 主机 + 一台 GPU 副机，分层调度多个本地小模型，低成本完成文档自动化。
+**Dual-node hybrid local AI stack** — orchestrate a CPU host plus a GPU secondary machine, tiering several local small models to get document automation done at low cost.
 
-> 核心卖点：不依赖云端高额 API，把 CPU + GPU 异构硬件和多个本地小模型组织成一个可自主运行的三级智能体系统。
+> Core value: no reliance on expensive cloud APIs. Organize heterogeneous CPU + GPU hardware and multiple local small models into a self-running three-tier agent system.
+
+**README**: [English](README.md) | [中文](README.zh.md)
 
 ---
 
-## 为什么做这个
+## Why
 
-面对两类真实约束：
+We face two real-world constraints:
 
-1. **成本敏感**：云端大模型 API 按 token 计费，长期跑自动化任务开销不可控。
-2. **硬件异构**：一台核显主机（CPU 强、无独立 GPU）+ 一台闲置 GPU 副机，单机装不下大模型，闲置 GPU 又浪费。
+1. **Cost sensitivity**: cloud LLM APIs bill per token; running long-term automation at cloud rates becomes uncontrollable.
+2. **Heterogeneous hardware**: one iGPU host (strong CPU, no discrete GPU) plus an idle GPU secondary machine. A single machine cannot fit a large model, and the idle GPU goes to waste.
 
-local-ai-stack 的解法：**双机协同 + 按任务难度分配合适的小模型**。简单格式化/命名用极小的 1.5B 模型，日常文本用 8B，复杂推理用 30B/14B，视觉任务独留给 GPU 副机。**能本地办到的绝不上云**，云模型只作兜底。
+The local-ai-stack answer: **dual-machine cooperation + assigning the right small model per task difficulty**. Tiny 1.5B models for simple formatting/renaming, 8B for everyday text, 30B/14B for heavy reasoning, and vision tasks reserved exclusively for the GPU secondary machine. **Anything doable locally never goes to the cloud**; the cloud model is only a fallback.
 
-## 核心特性
+## Core Features
 
-- **双机架构**：CPU 主机（常驻多模型）负责调度与轻量任务；GPU 副机（`llama-swap` 服务）负责实时/重活（生成、视觉、编码）。
-- **三级智能体分流**：决策 agent（云端语义判断）→ 调度 agent（本地拆单分发）→ 执行 agent（本地小模型干活）；干不了的**回人决断，不自动烧钱上云**。
-- **模型分层（tiering）**：1.5B 格式化 / 8B 日常 / 14B+30B 重活 / VL 视觉，按任务类型自动路由。
-- **技能渐进加载**：把可复用流程（报告模板、OCR 流程）封装成 skill，**用时才注入上下文**，不撑爆小模型有限的 context window。
-- **不可用自动降级**：云 API 断连时 fallback 本地模型，系统不中断。
-- **人留最终裁决权**：任何层搞不定 → 上报人类拍板，杜绝"自动上云烧钱"。
+- **Dual-node architecture**: the CPU host (keeping multiple models resident) handles dispatch and light tasks; the GPU secondary machine (a `llama-swap` service) handles real-time/heavy work (generation, vision, coding).
+- **Three-tier agent dispatch**: decision agent (cloud, semantic judgment) → dispatch agent (local, task splitting) → execution agent (local small models, doing the work); anything it cannot do goes **back to a human for a decision — no automatic, budget-burning cloud escalation**.
+- **Model tiering**: 1.5B formatting / 8B everyday / 14B+30B heavy / VL vision, routed automatically by task type.
+- **Progressive skill loading**: wrap reusable flows (report templates, OCR pipelines) into skills that are **injected into the context only when used**, so they never blow through a small model's limited context window.
+- **Automatic degradation on unavailability**: when the cloud API drops, fall back to local models and the system keeps running.
+- **Humans keep the final say**: if any layer is stuck, it escalates to a human to decide — eliminating "automatic cloud escalation that burns money."
 
-## 目录结构
+## Directory Structure
 
 ```
 local-ai-stack/
-├── README.md              # 本文件
+├── README.md              # this file
+├── README.zh.md           # Chinese version
 ├── LICENSE                # MIT
 └── docs/
-    ├── architecture.md    # 双机 + 三级分流架构详解（拓扑图、agent 分工、任务流）
-    ├── model-tiering.md   # 模型分层策略 + 实测性能基准 + 路由规则
-    ├── skills.md          # 技能渐进加载 + 按 agent 白名单注入（防 ctx 溢出）
-    ├── fallback.md        # fallback 链设计 + 网络容错 + 本地/云端切换
-    └── tuning.md          # 优化经验：系统瘦身、ctx 调优、踩坑记录
+    ├── architecture.md    # dual-node + three-tier dispatch (topology, agent roles, task flow)
+    ├── model-tiering.md   # tiering strategy + measured performance baseline + routing rules
+    ├── skills.md          # progressive skill loading + per-agent allowlist injection (ctx overflow prevention)
+    ├── fallback.md        # fallback chain design + network resilience + local/cloud switching
+    └── tuning.md          # optimization notes: system slimming, ctx tuning, pitfalls
 ```
 
-## 快速上手（概览）
+## Quick Start (Overview)
 
-1. **主机**跑 OpenClaw 网关 + `llama-swap`（CPU 常驻 30B/8B/1.5B 三模型）。
-2. **副机**（有 GPU）跑 `llama-swap` 服务，暴露 `local-4070` 端点（14B/vl/coder 等）。
-3. 配置 OpenClaw 的 provider 对接两个本地端点，定义多 agent 分级。
-4. 把可复用流程写成 skill，按 agent 白名单注入。
-5. 配好云模型 fallback 链（云端 → 本地 30B → 本地 8B）。
+1. On the **host**, run the OpenClaw gateway + `llama-swap` (three models resident on CPU: 30B/8B/1.5B).
+2. On the **secondary machine** (with GPU), run a `llama-swap` service exposed as the `local-4070` endpoint (14B/vl/coder, etc.).
+3. Configure OpenClaw providers to point at the two local endpoints, and define the multi-agent tiering.
+4. Wrap reusable flows as skills, injected via per-agent allowlist.
+5. Configure the cloud-model fallback chain (cloud → local 30B → local 8B).
 
-详细步骤见 `docs/architecture.md`。
+For detailed steps see `docs/architecture.md`.
 
-## 适用场景
+## Use Cases
 
-- 你有闲置 GPU + 一台 CPU 主机，想跑本地模型做自动化。
-- 你的任务量大、重复、格式化（文档报告、识别、整理），走云端太贵。
-- 你想让多个小模型按复杂度分工，而不是"一个大模型硬扛所有"。
+- You have an idle GPU plus a CPU host and want to run local models for automation.
+- Your workload is high-volume, repetitive, and formatting-heavy (document reports, recognition, organization) — too expensive on the cloud.
+- You want several small models to divide work by complexity instead of one large model doing everything.
 
-## 技术栈
+## Tech Stack
 
-- [OpenClaw](https://github.com/openclaw/openclaw) — agent 运行时与调度
-- [llama-swap](https://github.com/mostlygeek/llama-swap) — 多模型路由网关（OpenAI-compatible）
-- Qwen 系列小模型（1.5B / 8B / 14B / 30B） + VL 视觉模型
-- Windows（开发机）+ Linux（GPU 副机）
+- [OpenClaw](https://github.com/openclaw/openclaw) — agent runtime and dispatch
+- [llama-swap](https://github.com/mostlygeek/llama-swap) — multi-model routing gateway (OpenAI-compatible)
+- Qwen family small models (1.5B / 8B / 14B / 30B) plus VL vision models
+- Windows (dev machine) + Linux (GPU secondary machine)
 
 ## License
 
@@ -67,4 +70,4 @@ MIT
 
 ---
 
-*本地优先 · 成本敏感 · 人能拍板的地方绝不上云烧钱。*
+*Local-first · cost-sensitive · wherever a human can decide, never burn money on the cloud.*
